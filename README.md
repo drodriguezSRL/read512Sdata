@@ -43,6 +43,9 @@ This is a function required by the `export_binaries_512S.m`script. This function
 #### *count_BIN* ####
 This script contains a simple function to count the number of .BIN files saved during a single acquisition
 
+## Compatibility
+These scripts were tested on both MATLAB [R2023a](https://ch.mathworks.com/products/new_products/release2023a.html) and [R2024a](https://ch.mathworks.com/products/new_products/latest_features.html).
+
 ## References
 1. [SPAD512S System Documentation](https://piimaging.com/doc-spad512s)
 
