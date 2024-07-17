@@ -31,16 +31,16 @@ From the SPAD512S, data is saved by default based on the following directory str
 The scripts are designed to work regardless of the number of .BIN files saved but always within single acquisitions (i.e., the file path to the `acq0000X` folder of choice needs to be defined within the `export_binaries_512S.m` script). The scripts will need to be modified for them to read data from multiple acquisitions at once. 
 
 ## Short files description
-### *export_binaries_512S* ###
+#### *export_binaries_512S* ####
 This file reads all the .BIN files saved during a single acquisition and extracts and exports each 1-bit frame acquired as individual .PNG files.
 
-### *nbit_frames_export* ###
+#### *nbit_frames_export* ####
 Once the 1-bit frames have been exported to PNG, this script can build up n-bit .PNG images out of those 1-bit frames. The required bit depth can be explicitly defined within the script. 
 
-### *read_512Sbin* ###
+#### *read_512Sbin* ####
 This is a function required by the `export_binaries_512S.m`script. This function contains the necessary code to extract and reconstruct the data from a .BIN file so that single 1-bit frames can be exported. This script is based on the `python_tcp_stream_binary_intensity1bit.py` file available in the SPAD512S system documentation [1](#references).
 
-### *count_BIN* ###
+#### *count_BIN* ####
 This script contains a simple function to count the number of .BIN files saved during a single acquisition
 
 ## References
