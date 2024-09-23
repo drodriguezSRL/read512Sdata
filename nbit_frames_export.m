@@ -18,7 +18,7 @@ close all; clear all; clc;
 
 %%%%%%%%%%%%  VARIABLES DEFINITION  %%%%%%%%%%%%
 % Define file path and frame parameters [USER INPUT]
-file_path='C:/Users/davirodr/Downloads/data/intensity_images/acq00000';
+file_path='C:\Users\davirodr\Downloads\acq3';
 bit_path='/png/1bit/';
 no_rows=512;
 no_columns=512;
@@ -39,7 +39,7 @@ totnum_frames = length(content)-2; %always subtract 2 since length takes into ac
 fprintf('Total number of existing 1-bit frames in this folder: %.2d\n', totnum_frames);
 
 % Define desired bit depth and starting/end frame
-desired_bitdepth = 4;
+desired_bitdepth = 8;
 starting_frame = 1; % starting 1-bit frame 1='1.png'.
 
 % Define number of n-bit frames to export. Leave 0 for max number of n-bit

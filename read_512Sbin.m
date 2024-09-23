@@ -1,8 +1,7 @@
-function frames=read_512Sbin(file_path,bin_suffix)
+function frames=read_512Sbin(full_filename)
 
 % Open and read the binary file
-file_name = sprintf('RAW%05d', bin_suffix);
-fileID = fopen(file_path + "/" + 0 + "/" + file_name + ".bin");
+fileID = fopen(full_filename);
 A = fread(fileID, '*uint8');
 fclose(fileID);
 
@@ -14,14 +13,14 @@ A = A(1:end-4);
 datamap = zeros(512,512,256);
 
 % Determine the number of frames
-nr_images = length(A) * 8 / (512 * 512);
+nr_images = length(A) * 8 / (512 * 512); %256
 
 % Loop through each image and process the data
 for i = 0:(nr_images-1)
-    img_index_old = i*512*512/8 + 1;
-    img_index = ((i+1)*512*512)/8;
+    img_index_old = i*512*512/8 + 1; %8355841
+    img_index = ((i+1)*512*512)/8; %8388608
     
-    dataint = A(img_index_old:img_index);
+    dataint = A(img_index_old:img_index); %32768x1 uint8
 
     % Unpack bits manually
     %databit = zeros(numel(dataint) * 8, 1);

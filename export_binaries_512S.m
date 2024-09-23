@@ -1,34 +1,29 @@
 %{ 
 %%%%%%%%%%%%  README  %%%%%%%%%%%%
 Original script by David Rodríguez (https://github.com/drodriguezSRL)
-Last updated by David Rodríguez on 2024-Jul-17
+Last updated by David Rodríguez on 2024-Sep-23
 
 Camera: Pi-Imaging SPAD 512S Camera
 
-This script exports a sequence of 1-bit ("binary") frames in PNG format 
-captured during a single acquisition 
+This script exports a sequence of 1-bit frames in PNG format 
+captured during a single continous acquisition 
 
 NOTE i: Make sure all .BIN files are located in the same folder and that file
-names follow the convention 'RAW0000X' (if not, modify read_512Sbin
+names follow the convention 'RAW_timestamp.bin' (if not, modify read_512Sbin
 function)
-NOTE ii: This script needs the function read_512Sbin.m 
+NOTE ii: This script needs the functions 'read_512Sbin.m' and 'count_BIN.m'
 %}
 close all; clear all; clc;
 
 %%%%%%%%%%%%  VARIABLES DEFINITION  %%%%%%%%%%%%
 % Define file path and frame parameters [USER INPUT]
-file_path='C:/Users/davirodr/Downloads/data_1';
-
-%initialize a mega_array with the frames of the BIN 0
-mega_array = read_512Sbin(file_path,0); 
-mega_array = permute(mega_array, [3 2 1]);
+file_path='C:\Users\davirodr\Documents\Tests\2024.09.20_orbital_test_Niki_v2\SPAD\long_acquisitions\ref_4us_long'; % select data folder
 
 %%%%%%%%%%%%  PRELIMINARY CALCULATIONS  %%%%%%%%%%%%
-% Threshold for memory usage in bytes (e.g., use 50% of available memory)
-memory_threshold = 0.5 * check_memory();
-
-% Calculate the number of BIN files created
-totnum_BIN = count_BIN(file_path + "/" + 0);
+% Calculate the number of .bin files acquired
+file_pattern = fullfile(file_path, 'RAW_*.bin');
+file_list = dir(file_pattern);
+totnum_bin = length(file_list);
 
 % New directory for PNG images
 new_Pdir = file_path + "/png/1bit/";
@@ -38,79 +33,53 @@ if ~exist(new_Pdir, 'dir') %if not, create one
 end
 
 %%%%%%%%%%%%  PROCESSING BINARIES  %%%%%%%%%%%%
-f = waitbar(0, "Building mega array...");
-true_frame = 0;
+frames_subarray = []; % initialize mega array
+f = waitbar(0, "Building subarray...");
 
-if totnum_BIN > 1
+if totnum_bin ~= 0
+    for k= 1:1:(totnum_bin)
+        text = "Building mega array: " + string(k) + "/" + string(totnum_bin);
+        waitbar(k/totnum_bin, f, text);
 
-    % Create a larger subarray ("mega") containing all the binary files from ALL the BIN files
-    % Export in chunks to prevent memory saturation based on
-    % 'memory_threshold'
-    for bin_suffix= 1:1:(totnum_BIN-1)
-        waitbar(bin_suffix/(10), f, "Building mega array...");
+        % Get the file name
+        file_name = file_list(k).name;
+        full_filename = fullfile(file_path, file_name);
+
+        % Extract timestamp to add it to new file name
+        [~, name, ~] = fileparts(file_name);
+        tokens = regexp(name, 'RAW_(\d+\.\d+)', 'tokens');
+            
+        % Convert python timestamp to datetime format 
+        timestamp = str2double(tokens{1}{1});
+        datetimeValue = datetime(timestamp, 'ConvertFrom', 'posixtime', 'TimeZone', 'UTC');
+        formattedDateStr = datestr(datetimeValue, 'yyyymmdd_HHMMSS_FFF');
     
         % Call the read_binary function to extract subarray frames
-        frames_subarray=read_512Sbin(file_path,bin_suffix);
-    
-        % Concatenate the new subarray to the existing mega array in the first dimension (i.e., frames)
-        mega_array = cat(1, mega_array, frames_subarray);
-    
-        % Check memory usage (prevent MATLAB from running out of memory when
-        % procesing large datasets)
-        if whos('mega_array').bytes > memory_threshold
-            fprintf('Total number of BIN files that exceeded memory capacity threshold: %.2d\n', bin_suffix);
-            h = waitbar (0, "Saving binary files...");
+        frames_subarray=read_512Sbin(full_filename);
+        frames_subarray= permute(frames_subarray, [3 2 1]);
 
-            % Export binary frames from mega_array and clear array to free up
-            % memory
-            for frame = 1:size(mega_array,1)         
-                msg = 'Saving binary frames: ' + string(frame) + '/' + string(size(mega_array,1));
-                ptg = frame/size(mega_array,1);
-                waitbar(ptg,h,msg);
+        h = waitbar (0, "Saving binary files...");
+
+        % Export binary frames from mega_array and clear array to free up memory
+        for frame = 1:size(frames_subarray,1) 
+            msg = 'Saving binary frames: ' + string(frame) + '/' + string(size(frames_subarray,1));
+            ptg = frame/size(frames_subarray,1);
+            waitbar(ptg,h,msg);
             
-                bin_img = squeeze(mega_array(frame,:,:));   
-    
-                % Convert frame to logical array so that binary frames can be
-                % saved without normalization with imwrite.
-                bin_img = logical(bin_img);
-                true_frame = true_frame + 1;
-    
-                bin_file_name = new_Pdir + string(true_frame) + ".png";
-                imwrite(bin_img, bin_file_name, 'png')
-            end
-    
-            clear mega_array;
-            close(h);
-            mega_array = [];
-    
-            % Recalculate memory threshold
-            memory_threshold = 0.5 * check_memory();
+            bin_img = squeeze(frames_subarray(frame,:,:));   
+            
+            % Convert frame to logical array so that binary frames can be
+            % saved without normalization with imwrite.
+            bin_img = logical(bin_img);
+            
+            % Save binary as PNG
+            bin_file_name = new_Pdir + "spad_" + formattedDateStr +  "_frame" + string(frame) + ".png";
+            imwrite(bin_img, bin_file_name, 'png')
         end
+        clear frames_subarray;
+        close(h);
+        frames_subarray = [];  
     end
 end
-close(f);
-
-h = waitbar (0, "Saving remaining binary files...");
-% Save any remaining frames
-if ~isempty(mega_array)
-    for frame = 1:size(mega_array,1)
-        msg = 'Saving remaining binary frames: ' + string(frame) + '/' + string(size(mega_array,1));
-        ptg = frame/size(mega_array,1);
-        waitbar(ptg,h,msg);        
-        bin_img = squeeze(mega_array(frame,:,:));
-        bin_img = logical(bin_img);
-        true_frame = 1 + true_frame;      
-        bin_file_name = new_Pdir + string(true_frame) + ".png";
-        imwrite(bin_img, bin_file_name, 'png')
-    end
-end
-close(h);
 fprintf('Binary frames exported succesfully\n');
-
-%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%
-% Function to check available memory
-function available_memory = check_memory()
-    [~, systemview] = memory();
-    available_memory = systemview.PhysicalMemory.Available;
-end
 
