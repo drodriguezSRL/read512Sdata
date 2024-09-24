@@ -17,7 +17,7 @@ close all; clear all; clc;
 
 %%%%%%%%%%%%  VARIABLES DEFINITION  %%%%%%%%%%%%
 % Define file path and frame parameters [USER INPUT]
-file_path='C:\Users\davirodr\Documents\Tests\2024.09.20_orbital_test_Niki_v2\SPAD\long_acquisitions\ref_4us_long'; % select data folder
+file_path='C:\Users\davirodr\Documents\Tests\2024.09.20_orbital_test_Niki_v2\SPAD\long_acquisitions\sunlight_0.4us_long'; % select data folder
 
 %%%%%%%%%%%%  PRELIMINARY CALCULATIONS  %%%%%%%%%%%%
 % Calculate the number of .bin files acquired
@@ -63,7 +63,7 @@ if totnum_bin ~= 0
         % Export binary frames from mega_array and clear array to free up memory
         for frame = 1:size(frames_subarray,1) 
             msg = 'Saving binary frames: ' + string(frame) + '/' + string(size(frames_subarray,1));
-            ptg = frame/size(frames_subarray,1);
+            ptg = frame/size(frames_subarray,1);l
             waitbar(ptg,h,msg);
             
             bin_img = squeeze(frames_subarray(frame,:,:));   
@@ -81,5 +81,6 @@ if totnum_bin ~= 0
         frames_subarray = [];  
     end
 end
+close(f)
 fprintf('Binary frames exported succesfully\n');
 
