@@ -38,7 +38,7 @@ f = waitbar(0, "Building subarray...");
 
 if totnum_bin ~= 0
     for k= 1:1:(totnum_bin)
-        text = "Building mega array: " + string(k) + "/" + string(totnum_bin);
+        text = "Building subarray: " + string(k) + "/" + string(totnum_bin);
         waitbar(k/totnum_bin, f, text);
 
         % Get the file name
@@ -63,7 +63,7 @@ if totnum_bin ~= 0
         % Export binary frames from mega_array and clear array to free up memory
         for frame = 1:size(frames_subarray,1) 
             msg = 'Saving binary frames: ' + string(frame) + '/' + string(size(frames_subarray,1));
-            ptg = frame/size(frames_subarray,1);l
+            ptg = frame/size(frames_subarray,1);
             waitbar(ptg,h,msg);
             
             bin_img = squeeze(frames_subarray(frame,:,:));   
@@ -81,6 +81,6 @@ if totnum_bin ~= 0
         frames_subarray = [];  
     end
 end
-close(f)
+close(f);
 fprintf('Binary frames exported succesfully\n');
 
