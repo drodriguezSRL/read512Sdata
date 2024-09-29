@@ -51,7 +51,7 @@ if totnum_bin ~= 0
             
         % Convert python timestamp to datetime format 
         timestamp = str2double(tokens{1}{1});
-        datetimeValue = datetime(timestamp, 'ConvertFrom', 'posixtime', 'TimeZone', 'UTC');
+        datetimeValue = datetime(timestamp, 'ConvertFrom', 'posixtime', 'TimeZone', 'UTC+2');
         formattedDateStr = datestr(datetimeValue, 'yyyymmdd_HHMMSS_FFF');
     
         % Call the read_binary function to extract subarray frames

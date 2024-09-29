@@ -48,7 +48,7 @@ totnum_frames = numel(content);
 fprintf('Total number of 1-bit frames: %d\n', totnum_frames);
 
 % Define desired bit depth 
-desired_bitdepth = 4;
+desired_bitdepth = 8;
 frames_per_img = 2^desired_bitdepth;
 fprintf('Desired bitdept: %d\n', desired_bitdepth)
 
@@ -56,12 +56,12 @@ fprintf('Desired bitdept: %d\n', desired_bitdepth)
 % images possible.
 num_images = 0; 
 if num_images == 0
-    num_images = totnum_frames/256;
+    num_images = totnum_frames/2^desired_bitdepth;
 end
 fprintf('Total number of images to digitize: %.2d\n', num_images);
 
 % New directory for PNG images
-new_Pdir = file_path + "/png/" + string(desired_bitdepth) + "bit/";
+new_Pdir = file_path + "/png/"+string(desired_bitdepth)+"bit/";
 %check if new directory already exists
 if ~exist(new_Pdir, 'dir') %if not, create one
     mkdir(new_Pdir);
@@ -132,10 +132,6 @@ for i = 1:num_images
     png_file_path = fullfile(new_Pdir, png_file_name);
     %imwrite(uint8(flip_img),png_file_path,'png');
     imwrite(img, colormap_nbit, png_file_path,'png');
-
-    if desired_bitdepth ~= 8
-        frame_num = frame_num + 256 - frames_per_img; 
-    end
 end
 close(f);
 disp('All images were successfully digitized')
