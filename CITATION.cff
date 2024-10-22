@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: SPAD512S Data Reader
+message: >-
+  If you use this repository, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: David
+    family-names: Rodríguez-Martínez
+    orcid: 'https://orcid.org/0000-0003-4817-9225'
+repository-code: 'https://github.com/drodriguezSRL/read512Sdata.git'
+abstract: >-
+  This repository contains a series of MATLAB scripts
+  designed to read and export data acquired with Pi-Imaging
+  SPAD512S single-photon camera
+keywords:
+  - single-photon camera
+  - SPAD
+  - data reader
+  - bit-depth integration
+license: MIT
+commit: b6ada04c7c2c63d30785917e57bbea56ee5e39e1
+version: v1.0.0
+date-released: '2024-10-22'
