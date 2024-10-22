@@ -1,19 +1,21 @@
 # SPAD512S Data Reader
-***This repository contains a series of MATLAB scripts designed to read and export data acquired with Pi-Imaging SPAD512S camera***
+***This repository contains a series of MATLAB scripts designed to read and export data acquired with Pi-Imaging SPAD512S single-photon camera***
 
 ## Structure 
 ### Repository structure
 This repository contains 4 files:
 - *export_binaries_512S.m*
-- *nbit_frames_export.m*
+- *digitize_1bit2nbit.m*
+- *digitize_4bit2nbit.m*
+- *remap.m*
 - *read_512Sbin.m*
 - *count_BIN.m*
 
 ### Data structure
-The scripts contained in this repository are meant to work with the data structure created by default by the camera GUI. 
+The scripts contained in this repository have been updated to work with any data structure given the appropriate updates. As is, however, the scripts are designed to work with the data structure created by default by the camera GUI. 
 
 > [!NOTE]
-> The scripts within this repository are only meant to work based on 1-bit frame acquisitions.  
+> The scripts within this repository are meant to work based on 1-bit or 4-bit native frame acquisitions.  
 
 From the SPAD512S, data is saved by default based on the following directory structure:
 ```
@@ -34,14 +36,17 @@ The scripts are designed to work regardless of the number of .BIN files saved bu
 #### *export_binaries_512S* ####
 This file reads all the .BIN files saved during a single acquisition and extracts and exports each 1-bit frame acquired as individual .PNG files.
 
-#### *nbit_frames_export* ####
+#### *digitize_1bit2nbit* ####
 Once the 1-bit frames have been exported to PNG, this script can build up n-bit .PNG images out of those 1-bit frames. The required bit depth can be explicitly defined within the script. 
+
+#### *digitize_4bit2nbit* ####
+Similarly, this script can integrate 4-bit .PNG images to export images of a desired bit depth (>4bit). 
 
 #### *read_512Sbin* ####
 This is a function required by the `export_binaries_512S.m`script. This function contains the necessary code to extract and reconstruct the data from a .BIN file so that single 1-bit frames can be exported. This script is based on the `python_tcp_stream_binary_intensity1bit.py` file available in the SPAD512S system documentation [1](#references).
 
-#### *count_BIN* ####
-This script contains a simple function to count the number of .BIN files saved during a single acquisition
+#### *remap* ####
+This is a simple script meant to remap n-bit .PNG images into an 8-bit colormap. 
 
 ## Compatibility
 These scripts were tested on both MATLAB [R2023a](https://ch.mathworks.com/products/new_products/release2023a.html) and [R2024a](https://ch.mathworks.com/products/new_products/latest_features.html).

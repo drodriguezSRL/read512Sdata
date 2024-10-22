@@ -1,7 +1,7 @@
 %{ 
 %%%%%%%%%%%%  README  %%%%%%%%%%%%
 Original script by David Rodríguez (https://github.com/drodriguezSRL)
-Last updated by David Rodríguez on 2024-Sep-29
+Last updated: 2024-Oct-22
 
 Works with data from the following cameras: 
 - SwissSPAD2 Top Half array (512x256)
@@ -20,25 +20,19 @@ NOTE: 1-bit frames need to be exported first using
 close all; clear all; clc;
 
 %%%%%%%%%%%%  VARIABLES DEFINITION  %%%%%%%%%%%%
-% Define file path and frame parameters [USER INPUT]
-file_path='C:\Users\david\Documents\Tests\2024.09.20_orbital_test_Niki_v2\SPAD\long_acquisitions\sunfacing_0.1us_long';
-bit_path='/png/1bit/';
+file_path='.\noon-off\spad\1.0us'; % change this to your own!
+bit_path='/png/1bit/'; % change this to your own!
 no_rows=512;
 no_cols=512;
-readout_time = 0.25e-6; %readout time per binary frame in s
-acq_time = 4; %total acquistion time in s
-exp_time = 0.5e-6; % exposure time in s
-frame_period = 15e-6; %frame period in s
-illuminance = 250; %lux 
+
+% Define desired bit depth 
+desired_bitdepth = 8;
 
 %%%%%%%%%%%%  PRELIMINARY CALCULATIONS  %%%%%%%%%%%%
 disp("Reading directory...")
-
-% Calculate the number of .png files 
 directory = fullfile(file_path,bit_path);
 
-if ~exist(directory, 'dir') % Check if the directory exists
-    % If the directory does not exist, display an error message and stop execution
+if ~exist(directory, 'dir') 
     error('Directory "%s" does not exist. Make sure binary frames have been previously exported to PNG.', content);
 end
 
@@ -47,8 +41,6 @@ totnum_frames = numel(content);
 
 fprintf('Total number of 1-bit frames: %d\n', totnum_frames);
 
-% Define desired bit depth 
-desired_bitdepth = 8;
 frames_per_img = 2^desired_bitdepth;
 fprintf('Desired bitdept: %d\n', desired_bitdepth)
 
@@ -56,34 +48,32 @@ fprintf('Desired bitdept: %d\n', desired_bitdepth)
 % images possible.
 num_images = 0; 
 if num_images == 0
-    num_images = totnum_frames/2^desired_bitdepth;
+    num_images = totnum_frames/256;
 end
 fprintf('Total number of images to digitize: %.2d\n', num_images);
 
-% New directory for PNG images
-new_Pdir = file_path + "/png/"+string(desired_bitdepth)+"bit/";
-%check if new directory already exists
-if ~exist(new_Pdir, 'dir') %if not, create one
+
+new_Pdir = file_path + "/png/" + string(desired_bitdepth) + "bit/";
+if ~exist(new_Pdir, 'dir')
     mkdir(new_Pdir);
 end
 
-% Create a colormap for n grayscale levels
 colormap_nbit = gray(frames_per_img); % Generates a n-level grayscale colormap required for saving n-bit PNGs lower than 8-bit
 
 %%%%%%%%%%%%  EXPORT FRAMES  %%%%%%%%%%%%
-% Images will be exported 1 by 1 based on desired_bitdepth.
+% Images will be exported 1 by 1 based at the desired_bitdepth.
 % This means that if 8-bit is selected, 256 1-bit frames will be read at a time
 f = waitbar(0, "Saving images...");
 frame_num = 1;
 
-subarray = zeros(frames_per_img, no_rows, no_cols); %initialize array to hold 1-bit frames
+subarray = zeros(frames_per_img, no_rows, no_cols);
  
 for i = 1:num_images
     msg1 = 'Saving image ' + string(i) + '/' + string(num_images);
     waitbar(i/num_images,f,msg1);
 
     if i == 1
-        disp('Esimating total digitization time...')
+        disp('Estimating total digitization time...')
         tic;
     elseif i == 2
         digitize_time = time1img*num_images;
@@ -94,44 +84,38 @@ for i = 1:num_images
         disp(['Estimated time to digitize requested images: ', digitize_time, ' hours']);
     end
 
-    % for each n-bit frame sum up as many 1-bit frames as needed.
     for j = 1:frames_per_img
         file_name = content(frame_num).name;
         full_file = fullfile(directory,file_name); 
 
-        % read frame
-        frame = imread(full_file); % there might be some issue here with the /,\
+        frame = imread(full_file);
 
-        % from 2D to 3D array
-        %frame = reshape(frame, [1, size(frame,1), size(frame,2)]); % from 2D to 3D array
-
-        % append new frame into large subarray
-        %subarray = cat(1, subarray,frame);
         subarray(j,:,:) = frame; 
-
+        
         frame_num = frame_num + 1; 
     end
     if i == 1
         time1img = toc;
     end
-    img = squeeze(sum(uint16(subarray),1));   
+    img = squeeze(sum(uint16(subarray),1)); %sum up frames to create n-bit image
 
     % extract timestamp from last frame
-    % note: all 256 1-bit frame are saved under the same timestamp
-    pattern = '_(\d{8})_(\d{6})_(\d{3})_';
+    pattern = '_(\d{8})_(\d{6})_(\d{3})_'; % change this to your own!
     tokens = regexp(file_name, pattern, 'tokens');
     
     if ~isempty(tokens)
         timestamp = strcat(tokens{1}{1}, '_', tokens{1}{2}, '_', tokens{1}{3});
     else
-        timestamp = sprintf('unknown_%d', i); % Fallback in case pattern fails
+        timestamp = sprintf('unknown_%d', i); % fallback in case pattern fails
     end
     
-    % save n-bit PNG file
-    png_file_name = sprintf('spad_%s.png', timestamp);
+    png_file_name = sprintf('spad%d_%s.png', desired_bitdepth, timestamp); % change this to your own!
     png_file_path = fullfile(new_Pdir, png_file_name);
-    %imwrite(uint8(flip_img),png_file_path,'png');
     imwrite(img, colormap_nbit, png_file_path,'png');
+
+    if desired_bitdepth ~= 8 
+        frame_num = frame_num + 256 - frames_per_img;
+    end
 end
 close(f);
 disp('All images were successfully digitized')
